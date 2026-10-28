@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DA 原型">
+<meta name="theme-color" content="#0088bf">
+<title>DA 完成柯打 – Usability test prototype</title>
+<style>
+:root{
+  --stage:#e9ecee; --stage-ink:#5b6870;
+  --header:#0088bf; --ink:#00121a; --subtle:rgba(0,18,26,.6); --subtlest:rgba(0,18,26,.38);
+  --bg:#f7f8f8; --white:#fff; --yellow:#ffdd00; --red:#c41c43; --teal:#00aeb1;
+  --line:rgba(0,18,26,.1); --hl-blue:#e5f3f9; --hl-red:#d61f49;
+  --shadow9:0 3px 6px rgba(0,18,26,.09),0 5px 12px rgba(0,18,26,.06),0 2px 16px rgba(0,18,26,.05);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --stage:#14181b; --stage-ink:#8b979e; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --stage:#14181b; --stage-ink:#8b979e; color-scheme:dark; }
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--stage);overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang HK","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  -webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
+svg{display:block}
+#stage{position:relative;width:100%;height:100%;overflow:hidden}
+#phone{position:absolute;left:0;top:0;width:393px;transform-origin:0 0;background:var(--bg);overflow:hidden;color:var(--ink)}
+#stage.framed #phone{border-radius:44px;box-shadow:0 0 0 10px #1d2327,0 30px 60px rgba(0,0,0,.25)}
+.hint{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:12px;color:var(--stage-ink);display:none}
+#stage.framed .hint{display:block}
+
+/* iPhone home-screen (full screen) mode: the real status bar and home indicator sit over the design's own */
+:root.ios-sa{padding-top:0;padding-bottom:0}
+.ios-sa .sb>*{opacity:0}
+.ios-sa .home::after,.ios-sa .kbb::after{display:none}
+/* ---------- screen shell ---------- */
+.screen{position:absolute;inset:0;background:var(--bg);overflow:hidden;animation:fadeIn .14s ease-out}
+@keyframes fadeIn{from{opacity:.4}to{opacity:1}}
+.top{background:var(--header);color:#fff}
+.sb{height:54px;position:relative}
+.sb-time{position:absolute;left:0;top:0;width:134px;height:54px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px;letter-spacing:-.4px}
+.sb-icons{position:absolute;right:26px;top:21px;display:flex;gap:6px;align-items:center}
+.nav{height:56px;position:relative;display:flex;align-items:center;justify-content:center}
+.nav .ic-l{position:absolute;left:0;top:0;width:56px;height:56px;display:flex;align-items:center;justify-content:center}
+.nav .ic-r{position:absolute;right:0;top:0;height:56px;display:flex}
+.nav .ic-r>*{width:56px;height:56px;display:flex;align-items:center;justify-content:center}
+.nav-title{display:flex;align-items:center;gap:4px;font-weight:600;font-size:17px;letter-spacing:-.43px}
+.t17{font-size:17px;line-height:24px;letter-spacing:-.43px}
+.t20{font-size:20px;line-height:24px;letter-spacing:-.45px;font-weight:600}
+.t14{font-size:14px;line-height:20px;letter-spacing:-.15px}
+.b{font-weight:600}
+.sub{color:var(--subtle)}
+
+.redbar{background:var(--red);color:#fff;display:flex;align-items:center;gap:8px;padding:4px 16px;height:48px}
+.contact{background:#fff;padding:16px;display:flex;flex-direction:column;gap:16px}
+.contact-row{display:flex;align-items:center;justify-content:space-between}
+.contact-l{display:flex;align-items:center;gap:8px}
+.vdiv{width:1px;height:16px;background:var(--subtlest)}
+.pax{display:flex;align-items:center;color:var(--subtle);padding-right:4px}
+.callbtn{width:42px;height:42px;display:flex;align-items:center;justify-content:center}
+.callbtn span{width:38px;height:38px;border-radius:50%;background:var(--header);display:flex;align-items:center;justify-content:center;color:#fff}
+.field{background:rgba(218,218,218,.3);border-radius:20px;padding:8px 12px;display:flex;align-items:center;gap:8px;color:var(--subtle);text-align:left;width:100%;white-space:nowrap;overflow:hidden}
+.field span{overflow:hidden;text-overflow:ellipsis}
+.gap6{height:6px}.gap8{height:8px}
+
+.route{background:#fff}
+.rrow{display:flex;gap:16px;padding:4px 16px;min-height:56px;align-items:stretch}
+.rl{width:24px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.rl .ln{flex:1;width:0;border-left:2px dotted rgba(0,18,26,.22);min-height:8px}
+.rl .ln16{height:16px;flex:none}
+.rm{flex:1;min-width:0;padding:16px 0;display:flex;flex-direction:column;justify-content:center;text-align:left}
+.rr{width:24px;padding-top:16px}
+.tapaddr{cursor:pointer}
+.tapaddr:active .rm{opacity:.6}
+
+.reqs{background:#fff;padding:8px 16px;display:flex;flex-direction:column;gap:8px}
+.req{height:40px;display:flex;align-items:center;gap:16px}
+
+/* footer */
+.footer{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:16px 16px 0 0;box-shadow:var(--shadow9);overflow:hidden}
+.footer.sq{border-radius:0}
+.fhead{height:24px;display:flex;align-items:center;justify-content:center}
+.handle{width:40px;height:4px;border-radius:8px;background:var(--line)}
+.ftap{cursor:pointer}
+.timerrow{height:48px;display:flex;align-items:center;justify-content:center;padding:4px 16px}
+.teal{color:var(--teal);font-weight:600}
+.pay{display:flex;align-items:center;padding:16px 16px 0}
+.pay .l{flex:1;display:flex;gap:8px;align-items:center}
+.btns{display:flex;gap:8px;padding:16px}
+.pbtn{flex:1;background:var(--yellow);border-radius:999px;padding:16px;min-height:60px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px;letter-spacing:-.43px;color:var(--ink);white-space:pre}
+.pbtn:active{filter:brightness(.94)}
+.sbtn{border:2px solid var(--header);color:var(--header);border-radius:999px;padding:16px 24px;font-weight:600;font-size:17px;letter-spacing:-.43px}
+.sbtn:active{background:#e5f3f9}
+.home{height:34px;position:relative}
+.home::after{content:"";position:absolute;left:50%;bottom:8px;width:139px;height:5px;margin-left:-69.5px;border-radius:100px;background:#000}
+.grace{height:32px;background:#fff;position:relative;overflow:hidden}
+.grace i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--yellow)}
+.grace i.run{width:100%;transition:width 9s linear}
+
+/* price rows */
+.prow{display:flex;align-items:center;gap:16px;padding:0 16px;min-height:56px}
+.prow .m{flex:1;text-align:left}
+.prow .v{color:var(--subtle)}
+.prow.tall{min-height:76px}
+.hr16{height:16px;display:flex;align-items:center;padding:0 16px}
+.hr16 i{display:block;height:1px;width:100%;background:var(--line)}
+
+/* overlay + sheet */
+.dim{position:absolute;inset:0;background:rgba(0,18,26,.32);animation:dimIn .2s ease-out}
+@keyframes dimIn{from{opacity:0}to{opacity:1}}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:16px 16px 0 0;box-shadow:var(--shadow9);animation:sheetUp .26s cubic-bezier(.2,.8,.2,1);touch-action:none}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+.sheet.closing{transform:translateY(100%);transition:transform .2s ease-in}
+.dim.closing{opacity:0;transition:opacity .2s}
+.sheet .pay{padding:16px}
+
+/* popover */
+.popwrap{position:absolute;inset:0}
+.pop{position:absolute;left:50px;width:304px;background:rgba(255,255,255,.97);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;
+  box-shadow:0 0 0 .5px rgba(0,0,0,.04),0 18px 50px rgba(0,0,0,.18);animation:popIn .16s ease-out;transform-origin:50% 0}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.pop::before{content:"";position:absolute;top:-9px;left:50%;margin-left:-11px;border:11px solid transparent;border-top:0;border-bottom:10px solid rgba(255,255,255,.97)}
+.pop.up{transform-origin:50% 100%}
+.pop.up::before{top:auto;bottom:-9px;border-bottom:0;border-top:10px solid rgba(255,255,255,.97)}
+.pop button{height:48px;border-radius:24px;background:rgba(120,120,128,.16);font-size:17px;letter-spacing:-.43px;color:#000}
+.pop button:active{background:rgba(120,120,128,.28)}
+
+/* snackbar */
+.snack{position:absolute;left:8px;right:8px;height:36px;border-radius:6px;background:#5c686d;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 16px;font-size:15px;animation:popIn .16s ease-out;z-index:5}
+.snack button{width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#fff}
+
+/* start screen */
+.seg{display:flex;border:1px solid #fff;border-radius:20px;overflow:hidden}
+.seg span{height:30px;padding:5px 10px;font-size:14px;line-height:20px;font-weight:600;letter-spacing:-.15px}
+.seg span.on{background:#fff;color:var(--header);border-radius:20px 0 0 20px}
+.tabs{display:flex;align-items:flex-start;padding:0 16px 8px;height:40px}
+.tab{display:flex;justify-content:center;align-items:center}
+.tab span{padding:4px 16px;border-radius:999px;font-weight:600;font-size:17px;line-height:24px;letter-spacing:-.43px;display:flex;align-items:center;gap:4px}
+.tab span.on{background:#fff;color:var(--header)}
+.filterrow{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:56px}
+.switch{width:52px;height:32px;border-radius:100px;border:2px solid var(--subtlest);background:rgba(0,18,26,.05);position:relative}
+.switch i{position:absolute;left:6px;top:6px;width:16px;height:16px;border-radius:50%;background:var(--subtlest)}
+.cards{padding:0 8px;display:flex;flex-direction:column;gap:7px}
+.ocard{background:#fff;border-radius:8px;box-shadow:0 1px 1px rgba(0,18,26,.09),0 1px 1px rgba(0,18,26,.06),0 1px 3px rgba(0,18,26,.05);overflow:hidden;text-align:left;width:100%}
+.ocard:active{background:#f1f5f7}
+.otype{background:var(--hl-blue);height:24px;display:flex;align-items:center;padding:2px 8px;font-size:17px;line-height:24px;letter-spacing:-.43px}
+.obody{padding:8px 16px}
+.oroute{display:flex;align-items:center;gap:8px}
+.oprice{display:flex;align-items:center;gap:8px}
+.bnav{position:absolute;left:0;right:0;bottom:0;background:#fff;box-shadow:0 3px 3px rgba(0,18,26,.09),0 5px 6px rgba(0,18,26,.06),0 2px 8px rgba(0,18,26,.05)}
+.bnav .row{display:flex;height:56px}
+.bnav .row span{flex:1;display:flex;align-items:center;justify-content:center}
+
+/* chat */
+.chathead .nav{flex-direction:column}
+.chathead .ttl{font-weight:600;font-size:15px;line-height:20px}
+.chathead .st{font-size:15px;line-height:20px}
+.chatbody{position:absolute;left:0;right:0;top:110px;background:#fff;overflow-y:auto;padding:13px 16px 16px}
+.cnote{text-align:center;font-size:15px;line-height:20px;color:var(--subtle);margin-bottom:24px}
+.msg{display:flex;justify-content:flex-end;align-items:flex-end;gap:8px;margin-bottom:24px}
+.msg time{font-size:14px;line-height:20px;color:var(--subtle)}
+.bub{position:relative;background:var(--header);color:#fff;border-radius:8px 0 8px 8px;padding:8px 12px;font-size:17px;line-height:24px;letter-spacing:-.43px;max-width:256px;text-align:left;margin-right:8px}
+.bub::after{content:"";position:absolute;right:-8px;top:0;border-top:8px solid var(--header);border-right:8px solid transparent}
+.chatfoot{position:absolute;left:0;right:0;bottom:0;background:#fff}
+.chips{display:flex;gap:8px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;border-top:1px solid var(--line)}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;border:1px solid rgba(0,18,26,.38);border-radius:20px;padding:5px 9px;font-size:17px;line-height:24px}
+.chips button:active{background:#e5f3f9}
+.cfield{display:flex;align-items:center;gap:12px;padding:8px 16px 12px}
+.cfield .in{flex:1;background:#f1f3f3;border-radius:20px;padding:8px 14px;font-size:17px;line-height:24px;letter-spacing:-.43px;min-height:40px;text-align:left}
+.cfield .in.ph{color:var(--subtle)}
+.kb{background:#d1d4db;padding:8px 3px 0}
+.kr{display:flex;justify-content:center;gap:6px;margin-bottom:11px}
+.k{height:43px;min-width:32px;flex:0 0 32.5px;background:#fff;border-radius:5px;box-shadow:0 1px 0 #898a8d;display:flex;align-items:center;justify-content:center;font-size:22px}
+.k.g{background:#acb0ba;flex:0 0 43px}
+.k.w{flex:0 0 88px;font-size:16px;background:#acb0ba}
+.k.sp{flex:1;font-size:16px}
+.kbb{height:78px;display:flex;justify-content:space-between;padding:12px 26px 0;position:relative}
+.kbb::after{content:"";position:absolute;left:50%;bottom:8px;width:139px;height:5px;margin-left:-69.5px;border-radius:100px;background:#000}
+
+/* call */
+.call{background:linear-gradient(180deg,#43535b 0%,#222c31 55%,#12181b 100%);color:#fff}
+.call .who{position:absolute;left:0;right:0;top:120px;text-align:center}
+.call .who h2{margin:0;font-weight:400;font-size:34px;letter-spacing:.3px}
+.call .who p{margin:8px 0 0;font-size:17px;opacity:.75;font-variant-numeric:tabular-nums}
+.cgrid{position:absolute;left:44px;right:44px;bottom:210px;display:grid;grid-template-columns:repeat(3,1fr);row-gap:26px;justify-items:center}
+.cgrid div{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;opacity:.95}
+.cgrid span{width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center}
+.hang{position:absolute;left:50%;bottom:80px;width:76px;height:76px;margin-left:-38px;border-radius:50%;background:#ff3b30;display:flex;align-items:center;justify-content:center}
+.hang:active{filter:brightness(.88)}
+
+/* map */
+.map svg.m{position:absolute;inset:0;width:100%;height:100%}
+.mapback{position:absolute;right:12px;top:62px;height:40px;padding:0 14px 0 10px;border-radius:20px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);display:flex;align-items:center;gap:4px;font-size:16px;font-weight:600;color:#007aff}
+.mapback:active{background:#eef3f8}
+.mapcard{position:absolute;left:8px;right:8px;bottom:12px;background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(0,0,0,.16);padding:16px 16px 14px}
+.mapcard .app{font-size:13px;color:var(--subtle);margin-bottom:4px}
+.mapcard h3{margin:0;font-size:20px;line-height:26px;letter-spacing:-.4px}
+.mapcard .eta{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.mapcard .go{background:#34c759;color:#fff;border-radius:12px;padding:10px 22px;font-weight:600;font-size:17px}
+.mapsb{color:#000}
+
+/* price / payment flow */
+.link{color:var(--header)}
+.vphead{height:118px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+.vphead .l1{font-size:20px;line-height:32px}
+.vpamt{font-size:24px;line-height:32px;font-weight:600}
+.vplist{background:#fff;padding:8px 0}
+.sec{padding:8px 16px;font-size:14px;line-height:20px;letter-spacing:-.15px;color:var(--subtle)}
+.ascroll{position:absolute;left:0;right:0;top:110px;bottom:126px;overflow-y:auto;background:var(--bg);-webkit-overflow-scrolling:touch}
+.asec{background:#fff;margin-bottom:8px}
+.asec h4{margin:0;padding:16px 16px 8px;font-size:17px;line-height:24px;font-weight:600;letter-spacing:-.43px}
+.amt{color:var(--header);font-size:17px;letter-spacing:-.43px;margin-right:12px}
+.xb{display:flex;width:24px;height:24px;align-items:center;justify-content:center}
+.arow.tap{cursor:pointer}.arow.tap:active{background:#f3f5f6}
+.wsheet{padding:0}
+.whead{padding:16px 16px 0}
+.wtitle{display:flex;align-items:center;justify-content:space-between}
+.wtitle .t20{font-size:20px}
+.wfield{padding:24px 16px 16px}
+.wfield label{display:block}
+.wfield input{width:100%;border:0;border-bottom:1px solid var(--line);font:inherit;font-size:17px;line-height:24px;padding:4px 0 8px;color:var(--ink);background:transparent;outline:none;border-radius:0;-webkit-user-select:text;user-select:text}
+.wfield input::-webkit-outer-spin-button,.wfield input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.wfield input{-moz-appearance:textfield;appearance:textfield}
+.wfield input:focus{border-bottom-color:var(--header)}
+.wsheet .btns{box-shadow:0 -1px 0 var(--line)}
+.dlg{position:absolute;left:50%;top:50%;width:280px;transform:translate(-50%,-50%);background:#fff;border-radius:12px;padding:24px 16px 16px;text-align:center;box-shadow:0 10px 40px rgba(0,18,26,.22);animation:dlgIn .18s ease-out;z-index:6}
+@keyframes dlgIn{from{opacity:0;transform:translate(-50%,-48%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%)}}
+.dlg h3{margin:0;font-size:20px;line-height:28px;font-weight:600;letter-spacing:-.45px}
+.dlg p{margin:8px 0 24px;font-size:17px;line-height:24px;letter-spacing:-.43px}
+.dlg .col{display:flex;flex-direction:column;gap:12px}
+.dlg .pbtn,.dlg .sbtn{width:100%;flex:none}
+.dimfix{position:absolute;inset:0;background:rgba(0,18,26,.32);animation:dimIn .2s ease-out;z-index:5}
+.pop.dotpop{left:83px;width:288px;padding:11px 8px;gap:10px;transform-origin:90% 0}
+.pop.dotpop::before{left:auto;right:8px;margin-left:0}
+.pop .red{color:#d61f49}
+.fpsinfo{text-align:center;padding:2px 16px 20px;color:#fff}
+.fr{font-size:17px;line-height:24px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:4px}
+.fpsamt{font-size:24px;line-height:30px;font-weight:700}
+.fpsbody{position:absolute;left:0;right:0;bottom:0;background:#fff;text-align:center;padding:32px 40px 0}
+.fpsbody p{margin:0 0 32px;font-size:17px;line-height:24px;color:var(--subtle)}
+.fpsbody .qr{width:200px;height:200px;margin:0 auto}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="phone"><div id="app"></div></div>
+  <div class="hint">Tap through the flow · triple-tap “9:41” to restart</div>
+</div>
+
+<script>
+(() => {
+'use strict';
+/* =================== icons =================== */
+const I = {
+  close:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M5.5 5.5l13 13M18.5 5.5l-13 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  copy:c=>`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c||'currentColor'}" stroke-width="1.8"><rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2.5"/><path d="M15.5 8.5V6A2 2 0 0 0 13.5 4H6A2 2 0 0 0 4 6v7.5a2 2 0 0 0 2 2h2.5"/></svg>`,
+  dots:'<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5.5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="18.5" r="1.7"/></svg>',
+  bolt:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M14 2.5L5.5 13.6h5.8L9.8 21.5l8.7-11.6h-6L14 2.5z" fill="#fff"/></svg>',
+  personW:'<svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="8.2" r="3.8"/><path d="M4.5 19.5c0-3.6 3.4-5.8 7.5-5.8s7.5 2.2 7.5 5.8z"/></svg>',
+  person:'<svg width="24" height="24" viewBox="0 0 24 24" fill="rgba(0,18,26,.6)"><circle cx="12" cy="8.2" r="3.8"/><path d="M4.5 19.5c0-3.6 3.4-5.8 7.5-5.8s7.5 2.2 7.5 5.8z"/></svg>',
+  phone:c=>`<svg width="22" height="22" viewBox="0 0 24 24"><path fill="${c||'#fff'}" d="M6.6 10.8a15.2 15.2 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25c1.1.37 2.3.57 3.6.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg>`,
+  chat:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 3.6c-4.6 0-8.2 3.1-8.2 7 0 2 1 3.9 2.6 5.1l-.5 3.7 3.7-2c.8.2 1.6.3 2.4.3 4.6 0 8.2-3.1 8.2-7.1S16.6 3.6 12 3.6z" fill="rgba(0,18,26,.38)"/><circle cx="8.4" cy="10.7" r="1.15" fill="#fff"/><circle cx="12" cy="10.7" r="1.15" fill="#fff"/><circle cx="15.6" cy="10.7" r="1.15" fill="#fff"/></svg>',
+  navc:c=>`<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="${c}"/><path d="M17.3 6.7l-11 4.6 4.6 1.8 1.8 4.6z" fill="#fff"/></svg>`,
+  pin:c=>`<svg width="24" height="24" viewBox="0 0 24 24"><path fill="${c}" d="M12 2a7.3 7.3 0 0 0-7.3 7.3c0 5.3 7.3 12.7 7.3 12.7s7.3-7.4 7.3-12.7A7.3 7.3 0 0 0 12 2zm0 10a2.7 2.7 0 1 1 0-5.4 2.7 2.7 0 0 1 0 5.4z"/></svg>`,
+  check:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#1b8a36"/><path d="M7 12.3l3.3 3.2L17.2 8.6" stroke="#fff" stroke-width="2.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chev:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M7 9.5l5 5 5-5" stroke="#00121a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  en:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#f79a5a"/><rect x="5.6" y="7.6" width="12.8" height="8.8" rx="2" fill="none" stroke="#fff" stroke-width="1.4"/><text x="12" y="14.3" text-anchor="middle" font-size="6.6" font-weight="800" fill="#fff" font-family="Arial,Helvetica,sans-serif">EN</text></svg>',
+  paw:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#ef6c7c"/><g fill="#fff"><ellipse cx="12" cy="15" rx="3.9" ry="3.1"/><ellipse cx="7.3" cy="11.1" rx="1.6" ry="2"/><ellipse cx="16.7" cy="11.1" rx="1.6" ry="2"/><ellipse cx="9.9" cy="7.9" rx="1.6" ry="2.1"/><ellipse cx="14.1" cy="7.9" rx="1.6" ry="2.1"/></g></svg>',
+  wait:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#e2775c"/><path d="M7.5 5.8h7.4M7.5 18.2h5.2M8.4 5.8c0 3.2 3 4.3 3 6.2s-3 3-3 6.2M14 5.8c0 2.6-2 3.8-2.6 5" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/><text x="16.4" y="18.6" text-anchor="middle" font-size="7.5" font-weight="800" fill="#fff" font-family="Arial,Helvetica,sans-serif">$</text></svg>',
+  truck:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 7.5h11.5v8.5H2z" fill="#2d9bd8"/><path d="M13.5 10h4.3l3 3.2V16h-7.3z" fill="#1777b3"/><path d="M15 11.2h2.3l1.6 1.8H15z" fill="#bfe3f6"/><path d="M5 9.3l4.6 4.6M9.6 9.3L5 13.9" stroke="#ffdd00" stroke-width="1.7" stroke-linecap="round"/><circle cx="6" cy="17" r="1.9" fill="#00121a"/><circle cx="17.2" cy="17" r="1.9" fill="#00121a"/></svg>',
+  gogox:'<svg width="24" height="24" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3.5" fill="#0d8fcf"/><path d="M7.3 7.3l9.4 9.4M16.7 7.3l-9.4 9.4" stroke="#ffdd00" stroke-width="3.4" stroke-linecap="round"/></svg>',
+  wallet:(s=24)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><rect x="1.5" y="2.5" width="21" height="19" rx="3" fill="#1592c8"/><rect x="5" y="7.2" width="14" height="10" rx="1.6" fill="none" stroke="#fff" stroke-width="1.5"/><rect x="13.2" y="10.3" width="6.4" height="3.8" rx="1" fill="#fff"/></svg>`,
+  coin:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#ffdd00" stroke="#e8b800" stroke-width="1.2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="800" fill="#c08a00" font-family="Arial,Helvetica,sans-serif">G</text></svg>',
+  menu:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M4 6.5h16M4 12h16M4 17.5h16" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>',
+  funnel:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M4.5 5h15l-5.8 7.2v5.6l-3.4 1.7v-7.3z" fill="none" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"/></svg>',
+  sliders:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M4 8h9M17 8h3M4 16h3M11 16h9"/><circle cx="15" cy="8" r="2.2"/><circle cx="9" cy="16" r="2.2"/></svg>',
+  sort:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00121a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6M5.8 9.2L9 6l3.2 3.2M15 6v12M11.8 14.8L15 18l3.2-3.2"/></svg>',
+  wheel:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,18,26,.38)" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12.5" r="2.2"/><path d="M3.4 10.2c5.6-1.6 11.6-1.6 17.2 0M10.2 14.2L7.5 20M13.8 14.2l2.7 5.8"/></svg>',
+  gps:'<svg width="20" height="20" viewBox="0 0 20 20"><path d="M15.6 4.4L3.8 9.3l4.9 1.9 1.9 4.9z" fill="#0088bf"/></svg>',
+  arrow:'<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="rgba(0,18,26,.6)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10h10M11 6l4 4-4 4"/></svg>',
+  pin20:'<svg width="20" height="20" viewBox="0 0 24 24"><path fill="rgba(0,18,26,.38)" d="M12 2a7.3 7.3 0 0 0-7.3 7.3c0 5.3 7.3 12.7 7.3 12.7s7.3-7.4 7.3-12.7A7.3 7.3 0 0 0 12 2zm0 10a2.7 2.7 0 1 1 0-5.4 2.7 2.7 0 0 1 0 5.4z"/></svg>',
+  navList:'<svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#0088bf" stroke-width="2.2" stroke-linecap="round"><rect x="10" y="9" width="20" height="23" rx="3"/><path d="M15 15h10M15 20h10M15 25h6"/></svg>',
+  navHist:'<svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(0,18,26,.45)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 15.5A10.5 10.5 0 1 1 9.7 23"/><path d="M9 10.5v5.5h5.5M20.5 14.5V21l4 2.5"/></svg>',
+  navWallet:'<svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(0,18,26,.45)" stroke-width="2.2"><rect x="8" y="11" width="24" height="18" rx="3"/><path d="M23 17.5h9v5h-9a2.5 2.5 0 0 1 0-5z"/></svg>',
+  navGrid:'<svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(0,18,26,.45)" stroke-width="2.2"><rect x="9" y="9" width="9" height="9" rx="1"/><rect x="22" y="9" width="9" height="9" rx="1"/><rect x="9" y="22" width="9" height="9" rx="1"/><rect x="22" y="22" width="9" height="9" rx="1"/></svg>',
+  send:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0088bf" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 4.5l17 7.5-17 7.5 2.8-7.5z"/><path d="M6.3 12h8"/></svg>',
+  status:c=>`<svg width="78" height="13" viewBox="0 0 78 13" fill="${c}"><rect x="0" y="8" width="3" height="4.5" rx="1"/><rect x="4.8" y="6" width="3" height="6.5" rx="1"/><rect x="9.6" y="3.6" width="3" height="8.9" rx="1"/><rect x="14.4" y="1" width="3" height="11.5" rx="1"/><path d="M29.5 3.2a9.6 9.6 0 0 1 6.8 2.8l1.2-1.2a11.3 11.3 0 0 0-16 0l1.2 1.2a9.6 9.6 0 0 1 6.8-2.8zm0 3.4a6.2 6.2 0 0 1 4.4 1.8l1.2-1.2a7.9 7.9 0 0 0-11.2 0l1.2 1.2a6.2 6.2 0 0 1 4.4-1.8zm0 3.3a2.8 2.8 0 0 1 2 .8l-2 2-2-2a2.8 2.8 0 0 1 2-.8z"/><rect x="47.5" y=".5" width="24" height="12" rx="3.8" fill="none" stroke="${c}" stroke-opacity=".4"/><rect x="49.5" y="2.5" width="20" height="8" rx="2.2"/><path d="M73.2 4.5v4c.8-.3 1.4-1.1 1.4-2s-.6-1.7-1.4-2z" fill-opacity=".45"/></svg>`,
+  chevL:'<svg width="18" height="18" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" stroke="#007aff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  x14:'<svg width="14" height="14" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>',
+  support:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M4.5 13v-1.5a7.5 7.5 0 0 1 15 0V13"/><rect x="3" y="12" width="4" height="5.5" rx="1.6"/><rect x="17" y="12" width="4" height="5.5" rx="1.6"/><path d="M8.5 15.5c1 1.2 2.2 1.8 3.5 1.8s2.5-.6 3.5-1.8M19 17.5c-.6 1.7-2.4 2.6-5 2.6"/><circle cx="9.3" cy="12.6" r=".5" fill="#fff"/><circle cx="14.7" cy="12.6" r=".5" fill="#fff"/></svg>',
+  chevR:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M10 7l5 5-5 5" stroke="#00121a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  xDark:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M8 8l8 8M16 8l-8 8" stroke="#00121a" stroke-width="2" stroke-linecap="round"/></svg>',
+  info:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="#0088bf"/><rect x="11.1" y="10.6" width="1.8" height="5" rx=".9" fill="#fff"/><circle cx="12" cy="8.6" r="1.05" fill="#fff"/></svg>',
+  tunnel:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#14b3a8"/><path d="M6 17v-4a6 6 0 0 1 12 0v4" fill="none" stroke="#fff" stroke-width="2"/><path d="M10 17v-3a2 2 0 0 1 4 0v3z" fill="#fff"/></svg>',
+  parking:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#0b7fbf"/><circle cx="12" cy="12" r="7.3" fill="none" stroke="#fff" stroke-width="1.6"/><path d="M10.2 16V8.3h2.5a2.2 2.2 0 0 1 0 4.4h-2.5" fill="none" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+  routeI:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#8f9aa0"/><path d="M8 7.5h6a2.3 2.3 0 0 1 0 4.6h-4a2.3 2.3 0 0 0 0 4.6h6" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="7.2" cy="7.5" r="1.4" fill="#fff"/><circle cx="16.8" cy="16.7" r="1.4" fill="#fff"/></svg>',
+  size:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1aa3e0"/><rect x="4.5" y="11" width="15" height="5" rx="1" fill="#fff"/><path d="M7.5 11v2.2M10 11v1.4M12.5 11v2.2M15 11v1.4M17.5 11v2.2" stroke="#1aa3e0" stroke-width="1"/><text x="12" y="9.4" text-anchor="middle" font-size="4.6" font-weight="700" fill="#fff" font-family="Arial,sans-serif">6ft</text></svg>',
+  mover:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#38c46a"/><circle cx="10" cy="7.2" r="2" fill="#fff"/><path d="M8 18.5l1.3-5.2-1.5-2.3 2.4-1.4 1.6 2.4 2.7-.2" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="13.3" y="12.3" width="4.6" height="4.6" rx=".6" fill="#fff"/></svg>',
+  trolley:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#b27a55"/><path d="M8.5 5.5v11h7" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="10.5" y="7" width="5.5" height="7.5" rx="1" fill="#fff"/><circle cx="9.5" cy="18.2" r="1.3" fill="#fff"/><circle cx="15" cy="18.2" r="1.3" fill="#fff"/></svg>',
+  debris:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#14456b"/><path d="M7 9h10l-1 9H8z" fill="#fff"/><path d="M6 7.5h12M10 7.5V6h4v1.5" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M10.5 11v5M13.5 11v5" stroke="#14456b" stroke-width="1.2"/></svg>',
+  misc:'<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#f3b23f"/><circle cx="7.5" cy="12" r="1.4" fill="#fff"/><circle cx="12" cy="12" r="1.4" fill="#fff"/><circle cx="16.5" cy="12" r="1.4" fill="#fff"/></svg>',
+  arrowW:'<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h11M11 5.5l4.5 4.5-4.5 4.5"/></svg>',
+};
+
+/* =================== state =================== */
+const ADDR = {
+  pickup:{name:'KOHO, 鴻圖道觀塘香港', area:'觀塘'},
+  dropoff:{name:'香港尖沙咀梳士巴利道香港文化中心', area:'尖沙咀'}
+};
+const CHIPS = ['好呀','過緊去','就快到','到左','會遲少少'];
+const freshChats = () => ({
+  pickup:{msgs:[], draft:'你好，我依家過緊去'},
+  trip:{msgs:[{t:'你好，我依家過緊去',time:'10:10'}], draft:'你好，我已到達上貨點等候。超時15分鐘將收取等候費。'},
+  dropoff:{msgs:[{t:'你好，我依家過緊去',time:'10:10'},{t:'你好，我已到達上貨點等候。超時15分鐘將收取等候費。',time:'10:10'}], draft:'你好，我快到落貨點，請做好準備收貨'}
+});
+let st;
+function reset(){
+  st = {screen:'start', ret:null, cdStart:null, cuStart:null, waitSec:0, chats:freshChats(), map:null, chatKey:null, callStart:null,
+    price:{en:true, pet:true, wait:0}, draft:null};
+}
+reset();
+
+const PAGE = { // order pages that share the bottom-sheet + button behaviour
+  arrivePickup:{btn:'到達上貨點   開始計算等候時間', act:'toTrip1', chat:'pickup', total:'$100'},
+  trip1:{btn:'客貨已上車   開始行程', act:'toDropoff', chat:'trip', total:'$100'},
+  trip2:{btn:'客貨已上車   開始行程', act:'toDropoff', chat:'trip', total:'$100'},
+  dropoff:{btn:'到達落貨點', act:'toViewPrice', chat:'dropoff', total:'$100'},
+};
+
+/* =================== helpers =================== */
+const $ = s => document.querySelector(s);
+const mmss = s => { s = Math.max(0, Math.floor(s)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+const nowHM = () => { const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cdLeft = () => st.cdStart ? 900 - (Date.now()-st.cdStart)/1000 : 900;
+const cuSec = () => st.cuStart ? (Date.now()-st.cuStart)/1000 : 0;
+const waitMin = () => Math.max(1, Math.ceil(st.waitSec/60));
+
+const statusBar = (color='#fff') => `<div class="sb" style="color:${color}"><span class="sb-time" data-act="secret">9:41</span><span class="sb-icons">${I.status(color)}</span></div>`;
+
+const orderTop = (right) => `<div class="top">${statusBar()}<div class="nav">
+  <button class="ic-l" data-act="close" aria-label="關閉">${I.close}</button>
+  <div class="nav-title">#123456<button data-act="copy" aria-label="複製柯打編號" style="display:flex">${I.copy('#fff')}</button></div>
+  <div class="ic-r">${right || `<button data-act="dots" aria-label="更多">${I.dots}</button>`}</div></div></div>`;
+
+const contact = (ph) => `<div class="contact">
+  <div class="contact-row"><div class="contact-l"><span class="t17 b">王女士</span><span class="vdiv"></span><span class="pax">${I.person}<span class="t17">2</span></span></div>
+  <button class="callbtn" data-act="call" aria-label="打電話"><span>${I.phone()}</span></button></div>
+  <button class="field" data-act="chat">${I.chat}<span class="t17">${ph}</span></button></div>`;
+
+const reqs = (withWait) => `<div class="reqs">
+  <div class="req">${I.en}<span class="t17">英語司機</span></div>
+  <div class="req">${I.paw}<span class="t17">接送寵物</span></div>
+  ${withWait ? `<div class="req">${I.wait}<span class="t17">超時等候 (<span data-bind="waitmin">${waitMin()}</span>分鐘)</span></div>` : ''}</div>`;
+
+const routeBeforePickup = () => `<div class="route">
+  <div class="rrow tapaddr" data-act="addr" data-addr="pickup">
+    <div class="rl" style="padding-top:16px">${I.navc('#0088bf')}<i class="ln"></i></div>
+    <div class="rm"><span class="t20">${ADDR.pickup.name}</span></div>
+    <div class="rr"><button data-act="copy" aria-label="複製地址">${I.copy('#00121a')}</button></div></div>
+  <div class="rrow tapaddr" data-act="disableDrop"><div class="rl"><i class="ln ln16"></i>${I.pin('rgba(0,18,26,.25)')}</div>
+    <div class="rm"><span class="t17 sub">${ADDR.dropoff.name}</span></div><div class="rr"></div></div></div>`;
+
+const routeAfterPickup = () => `<div class="route">
+  <div class="rrow tapaddr" data-act="addr" data-addr="pickup">
+    <div class="rl" style="padding-top:16px">${I.check}<i class="ln"></i></div>
+    <div class="rm"><span class="t17">${ADDR.pickup.name}</span><span class="t14 sub">2026/09/27 16:00</span></div>
+    <div class="rr"></div></div>
+  <div class="rrow tapaddr" data-act="addr" data-addr="dropoff">
+    <div class="rl"><i class="ln ln16"></i>${I.pin('#0088bf')}</div>
+    <div class="rm"><span class="t20">${ADDR.dropoff.name}</span></div>
+    <div class="rr"><button data-act="copy" aria-label="複製地址">${I.copy('#00121a')}</button></div></div></div>`;
+
+const timerRow = key => key === 'trip1'
+  ? `<div class="timerrow"><span class="t17"><span class="teal" data-bind="cd">${mmss(Math.ceil(cdLeft()))}</span> 後開始自動計等候時間</span></div>`
+  : key === 'trip2' ? `<div class="timerrow"><span class="t17"><span class="teal"><span data-bind="cu">${mmss(cuSec())}</span> ($10)</span> 客人超時等候時間</span></div>` : '';
+
+const payRow = (total) => `<div class="pay"><div class="l">${I.wallet()}<span class="t17 b">轉數快 (二維碼)</span></div><span class="t20">${total}</span></div>`;
+
+const orderFooter = (key, timerRow='') => { const p = PAGE[key]; return `<div class="footer" data-footer>
+  <div class="ftap" data-act="expand"><div class="fhead"><i class="handle"></i></div>${timerRow}${payRow(p.total)}</div>
+  <div class="btns"><button class="pbtn" data-act="${p.act}">${p.btn}</button></div><div class="home"></div></div>`; };
+
+/* =================== screens =================== */
+const S = {};
+
+S.start = () => {
+  const card = (km) => `<button class="ocard" data-act="toPicking">
+    <div class="otype"><span class="b" style="color:var(--hl-red)">即時</span>${I.gps}<span style="color:#0088bf">${km}</span></div>
+    <div class="obody"><div class="oroute">${I.pin20}<span class="t20" style="display:flex;align-items:center">觀塘${I.arrow}尖沙咀</span></div>
+    <div class="hr16" style="padding:0"><i></i></div>
+    <div class="oprice">${I.wallet(20)}<span class="t20" style="margin-left:auto">$100</span></div></div></button>`;
+  return `<div class="screen" style="background:#fff">
+  <div class="top">${statusBar()}<div class="nav">
+    <span class="ic-l">${I.menu}</span>
+    <div class="seg"><span class="on">貨運</span><span>速遞</span></div>
+    <div class="ic-r"><span>${I.funnel}</span><span>${I.sliders}</span></div></div>
+    <div class="tabs"><div class="tab" style="width:98px"><span class="on">即時</span></div>
+      <div class="tab" style="flex:1"><span>即日預約 <i style="width:12px;height:12px;border-radius:50%;background:#ffdd00;display:inline-block"></i></span></div>
+      <div class="tab" style="width:98px"><span>預約</span></div></div></div>
+  <div style="position:absolute;left:0;right:0;top:150px;bottom:0;background:var(--bg);overflow-y:auto;padding-bottom:100px">
+    <div class="filterrow"><div style="display:flex;align-items:center"><span class="t17 b">即時</span>${I.sort}<span class="t17 sub" style="width:16px;text-align:center">•</span><span class="t17 sub">上貨點 全港</span></div>
+      <div style="display:flex;align-items:center;gap:8px">${I.wheel}<span class="switch"><i></i></span></div></div>
+    <div class="cards">${card('~1公里')}${card('~1km')}${card('~1km')}${card('~1km')}${card('~1km')}</div></div>
+  <div class="bnav"><div class="row"><span>${I.navList}</span><span>${I.navHist}</span><span>${I.navWallet}</span><span>${I.navGrid}</span></div><div class="home"></div></div></div>`;
+};
+
+S.picking = () => `<div class="screen">
+  ${orderTop(`<span style="width:auto;padding:0 16px 0 8px;gap:0" class="t17"><span>-</span>${I.coin}<span>10</span></span>`)}
+  <div class="redbar" style="justify-content:space-between"><span style="display:flex;align-items:center;gap:8px">${I.bolt}<span class="t17">於16:35前到達上貨點</span></span>${paxW.replace('${I_PERSONW}', I.personW)}</div>
+  <div class="route">
+    <div class="rrow"><div class="rl" style="padding-top:16px">${I.navc('rgba(0,18,26,.25)')}<i class="ln"></i></div><div class="rm"><span class="t20">觀塘</span></div><div class="rr"></div></div>
+    <div class="rrow"><div class="rl"><i class="ln ln16"></i>${I.pin('rgba(0,18,26,.25)')}</div><div class="rm" style="padding:8px 0 16px"><span class="t20">尖沙咀</span></div><div class="rr"></div></div></div>
+  <div class="gap8"></div>
+  <div style="background:#fff">
+    <div class="prow">${I.truck}<span class="m t17">車費</span><span class="v t17">$80</span></div>
+    <div class="prow">${I.en}<span class="m t17">英語司機</span><span class="v t17">$5</span></div>
+    <div class="prow">${I.paw}<span class="m t17">接送寵物</span><span class="v t17">$10</span></div>
+    <div class="prow tall">${I.gogox}<span class="m"><span class="t17" style="display:block">代GoGoX收取費用</span><span class="t14 sub">從錢包自動扣除</span></span><span class="v t17">$5</span></div></div>
+  <div class="footer sq">
+    <div class="grace"><i id="graceFill"></i></div>
+    ${payRow('$100')}
+    <div class="btns"><button class="sbtn" data-act="toStart">不接了</button><button class="pbtn" data-act="toArrive">確定接柯打</button></div>
+    <div class="home"></div></div></div>`;
+
+S.arrivePickup = () => `<div class="screen">
+  ${orderTop()}
+  <div class="redbar">${I.bolt}<span class="t17">於16:35前到達上貨點</span></div>
+  ${contact('俾客人知你過緊來...')}
+  <div class="gap6"></div>${routeBeforePickup()}<div class="gap8"></div>${reqs(false)}
+  ${orderFooter('arrivePickup')}</div>`;
+
+S.trip1 = () => `<div class="screen">
+  ${orderTop()}${contact('俾客人知你已抵達，超時收等待費...')}
+  <div class="gap6"></div>${routeAfterPickup()}<div class="gap8"></div>${reqs(false)}
+  <div data-act="skipWait" style="position:absolute;left:0;right:0;top:530px;bottom:238px"></div>
+  ${orderFooter('trip1', timerRow('trip1'))}</div>`;
+
+S.trip2 = () => `<div class="screen">
+  ${orderTop()}${contact('俾客人知你已抵達，超時收等待費...')}
+  <div class="gap6"></div>${routeAfterPickup()}<div class="gap8"></div>${reqs(false)}
+  ${orderFooter('trip2', timerRow('trip2'))}</div>`;
+
+S.dropoff = () => `<div class="screen">
+  ${orderTop()}${contact('俾客人知準備收貨...')}
+  <div class="gap6"></div>${routeAfterPickup()}<div class="gap8"></div>${reqs(st.waitSec > 0)}
+  ${orderFooter('dropoff')}</div>`;
+
+S.chat = () => {
+  const c = st.chats[st.chatKey];
+  const keys = r => r.split('').map(k => `<span class="k">${k}</span>`).join('');
+  return `<div class="screen" style="background:#fff">
+  <div class="top chathead">${statusBar()}<div class="nav">
+    <button class="ic-l" data-act="back" aria-label="返回">${I.close}</button>
+    <span class="ttl">Client name</span><span class="st">Kwun Tong &gt; Aberdeen</span></div></div>
+  <div class="chatbody" id="chatbody" style="bottom:${c.draft.length > 20 ? 435 : 411}px">
+    <div class="cnote">Auto-translation is enabled (Beta)<br>Click “View Original” if auto-translation is inaccurate</div>
+    ${c.msgs.map(m => `<div class="msg"><time>${m.time}</time><div class="bub">${esc(m.t)}</div></div>`).join('')}</div>
+  <div class="chatfoot">
+    <div class="chips">${CHIPS.map(t => `<button data-act="chip" data-t="${t}">${t}</button>`).join('')}</div>
+    <div class="cfield"><div class="in ${c.draft ? '' : 'ph'}">${c.draft ? esc(c.draft) : '輸入訊息...'}</div><button data-act="send" aria-label="發送">${I.send}</button></div>
+    <div class="kb"><div class="kr">${keys('QWERTYUIOP')}</div><div class="kr" style="padding:0 18px">${keys('ASDFGHJKL')}</div>
+      <div class="kr"><span class="k g">⇧</span><span style="flex:0 0 6px"></span>${keys('ZXCVBNM')}<span style="flex:0 0 6px"></span><span class="k g">⌫</span></div>
+      <div class="kr" style="margin-bottom:0"><span class="k w">123</span><span class="k sp">space</span><span class="k w">return</span></div>
+      <div class="kbb"><span style="font-size:26px">☺︎</span><span style="font-size:22px">🎙︎</span></div></div></div></div>`;
+};
+
+S.call = () => `<div class="screen call">
+  ${statusBar('#fff')}
+  <div class="who"><h2>王女士</h2><p data-bind="call">撥號中…</p></div>
+  <div class="cgrid">
+    ${[['靜音','M12 4a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V7a3 3 0 0 1 3-3zM6.5 11.5a5.5 5.5 0 0 0 11 0M12 17v3'],
+       ['鍵盤','M6 6h.01M12 6h.01M18 6h.01M6 12h.01M12 12h.01M18 12h.01M6 18h.01M12 18h.01M18 18h.01'],
+       ['擴音','M4 9.5h3.5L12 6v12l-4.5-3.5H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11'],
+       ['加入通話','M12 5v14M5 12h14'],
+       ['FaceTime','M3.5 7.5h11v9h-11zM14.5 10.5l5-3v9l-5-3'],
+       ['聯絡資料','M12 11.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM5 19.5c0-3.5 3.1-5.5 7-5.5s7 2 7 5.5']]
+      .map(([l,d]) => `<div><span><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="${l==='鍵盤'?3.2:1.6}" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg></span>${l}</div>`).join('')}</div>
+  <button class="hang" data-act="hangup" aria-label="掛斷"><span style="transform:rotate(135deg);display:flex">${I.phone('#fff').replace('width="22" height="22"','width="34" height="34"')}</span></button>
+  <div class="home" style="position:absolute;left:0;right:0;bottom:0;filter:invert(1)"></div></div>`;
+
+S.map = () => {
+  const m = st.map, isPick = m.addr === 'pickup';
+  const title = isPick ? 'KOHO' : '香港文化中心';
+  const sub = isPick ? '鴻圖道觀塘香港' : '香港尖沙咀梳士巴利道';
+  return `<div class="screen map" style="background:#efece4">
+  <svg class="m" viewBox="0 0 393 852" preserveAspectRatio="xMidYMid slice">
+    <rect width="393" height="852" fill="#f1eee8"/>
+    ${isPick ? `<path d="M-10 640 C 80 610 140 660 230 630 S 360 600 410 620 L410 870 L-10 870Z" fill="#a9d3f2"/>`
+             : `<path d="M-10 520 C 90 500 170 540 260 515 S 370 500 410 505 L410 870 L-10 870Z" fill="#a9d3f2"/>`}
+    <rect x="30" y="170" width="110" height="80" rx="10" fill="#cfe8c4"/><rect x="250" y="300" width="100" height="70" rx="10" fill="#cfe8c4"/>
+    <g stroke="#fff" stroke-linecap="round" fill="none">
+      <path d="M-10 150 L410 120" stroke-width="16"/><path d="M-10 360 L410 330" stroke-width="12"/>
+      <path d="M60 -10 L120 ${isPick?640:520}" stroke-width="12"/><path d="M230 -10 L270 ${isPick?640:520}" stroke-width="16"/>
+      <path d="M-10 260 L410 245" stroke-width="8"/><path d="M-10 440 L410 420" stroke-width="8"/><path d="M330 -10 L340 ${isPick?620:510}" stroke-width="8"/>
+    </g>
+    <g stroke="#f6cf65" stroke-linecap="round" fill="none"><path d="M230 -10 L270 ${isPick?640:520}" stroke-width="9"/><path d="M-10 150 L410 120" stroke-width="9"/></g>
+    <path d="M110 ${isPick?560:470} L 100 362 L 243 352 L 252 ${isPick?250:240}" stroke="#1a73e8" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="110" cy="${isPick?560:470}" r="11" fill="#fff"/><circle cx="110" cy="${isPick?560:470}" r="7.5" fill="#1a73e8"/>
+    <g transform="translate(252 ${isPick?250:240})"><path d="M0 0c-2-8-14-14-14-26a14 14 0 0 1 28 0C14-14 2-8 0 0z" fill="#ea4335"/><circle cy="-26" r="5.5" fill="#fff"/></g>
+    <text x="268" y="${isPick?222:212}" font-size="14" font-weight="600" fill="#00121a" font-family="-apple-system,PingFang HK,sans-serif">${title}</text>
+    <text x="22" y="${isPick?700:600}" font-size="13" fill="#4a7ea8" font-family="-apple-system,PingFang HK,sans-serif">${isPick ? '觀塘避風塘' : '維多利亞港'}</text>
+  </svg>
+  <div style="position:absolute;left:0;right:0;top:0">${statusBar('#000')}</div>
+  <button class="mapback" data-act="back">${I.chevL}<span>返回 GoGoX</span></button>
+  <div class="mapcard"><div class="app">${m.app}</div><h3>${title}</h3><div class="t14 sub">${sub}</div>
+    <div class="eta"><span class="t17"><b>${isPick ? '8' : '14'} 分鐘</b> <span class="sub">· ${isPick ? '2.1' : '5.6'} 公里</span></span><span class="go">開始導航</span></div></div></div>`;
+};
+
+/* ---------- price helpers ---------- */
+const waitFee = m => m > 0 ? Math.ceil(m / 5) * 10 : 0;
+const delta = pr => waitFee(pr.wait) - (pr.en ? 0 : 5) - (pr.pet ? 0 : 10);
+const total = pr => 100 + delta(pr);
+const signed = d => (d < 0 ? '−$' : '+$') + Math.abs(d);
+const amendSum = pr => waitFee(pr.wait) + (pr.en ? 5 : 0) + (pr.pet ? 10 : 0);
+const timerMinLabel = () => st.waitSec > 0 ? ` (${waitMin()}分鐘)` : '';
+
+const paxW = '<span style="display:flex;align-items:center;padding-right:4px;color:#fff">${I_PERSONW}<span class="t17">2</span></span>';
+
+S.summary = () => {
+  const pr = st.price, t = total(pr);
+  return `<div class="screen">
+  ${orderTop(`<span>${I.support}</span>`)}
+  <div class="redbar" style="justify-content:space-between"><span style="display:flex;align-items:center;gap:8px">${I.bolt}<span class="t17">今日, 16:35</span></span>${paxW.replace('${I_PERSONW}', I.personW)}</div>
+  <div class="route">
+    <div class="rrow"><div class="rl" style="padding-top:16px">${I.check}<i class="ln"></i></div>
+      <div class="rm"><span class="t17">${ADDR.pickup.name}</span><span class="t14 sub">2026/09/27 16:00</span></div><div class="rr"></div></div>
+    <div class="rrow"><div class="rl" style="height:56px;flex:none"><i class="ln ln16"></i>${I.check}</div>
+      <div class="rm"><span class="t17">${ADDR.dropoff.name}</span><span class="t14 sub">2026/09/27 16:23</span></div><div class="rr"></div></div></div>
+  <div class="gap8"></div>
+  <div class="vplist">
+    <div class="sec">柯打價錢</div>
+    <div class="prow">${I.wallet()}<span class="m t17">轉數快 (二維碼)</span><span class="t17 b">$${t}</span></div>
+    <div class="sec">價格細項</div>
+    <div class="prow">${I.truck}<span class="m t17">車費</span><span class="v t17">$80</span></div>
+    ${pr.en ? `<div class="prow">${I.en}<span class="m t17">英語司機</span><span class="v t17">$5</span></div>` : ''}
+    ${pr.pet ? `<div class="prow">${I.paw}<span class="m t17">接送寵物</span><span class="v t17">$10</span></div>` : ''}
+    <div class="prow">${I.gogox}<span class="m t17" style="display:flex;align-items:center;gap:4px">代GoGoX收取費用${I.info}</span><span class="v t17">$5</span></div>
+    ${pr.wait ? `<div class="prow">${I.wait}<span class="m t17">超時等候時間 (${pr.wait}分鐘)</span><span class="v t17">$${waitFee(pr.wait)}</span></div>` : ''}
+  </div></div>`;
+};
+
+S.viewPrice = () => {
+  const pr = st.price, t = total(pr);
+  const waitLabel = pr.wait ? `超時等候時間 (${pr.wait}分鐘)` : `超時等候時間${timerMinLabel()}`;
+  return `<div class="screen">
+  <div class="top">${statusBar()}<div class="nav"><button class="ic-l" data-act="vpClose" aria-label="關閉">${I.close}</button>
+    <span class="t17 b">柯打價錢</span><div class="ic-r"><span>${I.support}</span></div></div>
+    <div class="vphead"><div class="l1">撳“收取款項”掃碼收款</div><div class="vpamt">$${t}</div></div></div>
+  <div class="vplist">
+    <div class="sec">柯打價錢</div>
+    <div class="prow">${I.wallet()}<span class="m t17">轉數快 (二維碼)</span><span class="t17 b">$${t}</span></div>
+    <div class="sec">價格細項</div>
+    <div class="prow">${I.truck}<span class="m t17">車費</span><span class="v t17">$80</span></div>
+    ${pr.en ? `<div class="prow">${I.en}<span class="m t17">英語司機</span><span class="v t17">$5</span></div>` : ''}
+    ${pr.pet ? `<div class="prow">${I.paw}<span class="m t17">接送寵物</span><span class="v t17">$10</span></div>` : ''}
+    <div class="prow">${I.gogox}<span class="m t17" style="display:flex;align-items:center;gap:4px">代GoGoX收取費用${I.info}</span><span class="v t17">$5</span></div>
+    <div class="prow">${I.wait}<span class="m t17">${waitLabel}</span>${pr.wait ? `<span class="v t17">$${waitFee(pr.wait)}</span>` : `<button class="link t17" data-act="waitSheet">收取等待費</button>`}</div>
+  </div>
+  <div class="footer sq"><div class="btns"><button class="sbtn" style="flex:1" data-act="toAmend">修正價錢</button><button class="pbtn" data-act="toFps">收取款項</button></div><div class="home"></div></div></div>`;
+};
+
+S.amend = () => {
+  const d = st.draft;
+  const row = (icon, label, right, attrs = '') => `<div class="prow arow ${attrs ? 'tap' : ''}" ${attrs}>${icon}<span class="m t17">${label}</span>${right}</div>`;
+  const chev = I.chevR;
+  const x = (amt, k) => `<span class="amt">$${amt}</span><button class="xb" data-act="xItem" data-k="${k}" aria-label="移除">${I.xDark}</button>`;
+  const waitRow = d.wait
+    ? row(I.wait, `超時等候時間 (${d.wait}分鐘)`, x(waitFee(d.wait), 'wait'))
+    : row(I.wait, `超時等候時間${timerMinLabel()}`, `<button class="link t17" data-act="waitSheet">收取等待費</button>`);
+  return `<div class="screen">
+  <div class="top">${statusBar()}<div class="nav"><button class="ic-l" data-act="amendClose" aria-label="關閉">${I.close}</button><span class="t17 b">修正價錢</span></div></div>
+  <div class="ascroll" id="scroller">
+    <div class="asec"><h4>路程收費</h4>
+      ${row(I.tunnel, '隧道費及橋費', chev)}${row(I.parking, '停車場收費', chev)}${row(I.routeI, '路線', chev)}${waitRow}</div>
+    <div class="asec"><h4>附加服務</h4>
+      ${row(I.size, '貨物呎寸超過6呎', chev)}${row(I.mover, '定價幫搬', chev)}${row(I.trolley, '借車仔', chev)}
+      ${d.en ? row(I.en, '英語司機', x(5, 'en')) : row(I.en, '英語司機', chev, 'data-act="readd" data-k="en"')}
+      ${d.pet ? row(I.paw, '接送寵物', x(10, 'pet')) : row(I.paw, '接送寵物', chev, 'data-act="readd" data-k="pet"')}
+      ${row(I.debris, '建築廢料', chev)}</div>
+    <div class="asec"><h4>其他</h4>${row(I.misc, '其他雜項', chev)}</div>
+  </div>
+  <div class="footer sq"><div class="btns"><button class="pbtn" data-act="commitAmend">修正 (+$${amendSum(d)})</button></div><div class="home"></div></div></div>`;
+};
+
+function qrSvg(){
+  const N = 25, c = 8; let r = '', seed = 7;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const finder = (x, y) => (x >= 0 && x < 7 && y >= 0 && y < 7);
+  const inF = (x, y) => finder(x, y) || finder(x - (N - 7), y) || finder(x, y - (N - 7));
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    if (inF(x, y)) continue;
+    if (rnd() < .48) r += `M${x*c} ${y*c}h${c}v${c}h-${c}z`;
+  }
+  const f = (x, y) => `M${x*c} ${y*c}h${7*c}v${7*c}h-${7*c}zM${(x+1)*c} ${(y+1)*c}v${5*c}h${5*c}v-${5*c}zM${(x+2)*c} ${(y+2)*c}h${3*c}v${3*c}h-${3*c}z`;
+  return `<svg class="qr" viewBox="0 0 ${N*c} ${N*c}" shape-rendering="crispEdges"><path d="${r}${f(0,0)}${f(N-7,0)}${f(0,N-7)}" fill="#000" fill-rule="evenodd"/></svg>`;
+}
+
+S.fps = () => {
+  const t = total(st.price);
+  return `<div class="screen" style="background:#fff">
+  <div class="top">${statusBar()}<div class="nav"><button class="ic-l" data-act="fpsClose" aria-label="關閉">${I.close}</button>
+    <span class="t17 b">收取款項</span><div class="ic-r"><span>${I.support}</span></div></div>
+    <div class="fpsinfo"><div class="t14" style="opacity:.85">柯打編號 #123456</div>
+      <div class="fr">觀塘${I.arrowW}尖沙咀</div>
+      <div class="t14" style="margin-top:14px;font-size:15px">總費用</div><div class="fpsamt">HK$${t}</div></div></div>
+  <div class="fpsbody" style="top:${110 + 135}px"><p>調節屏幕亮度，方便客人掃掃描二維碼<br>完成支付</p>${qrSvg()}
+    <div class="t14 sub" style="margin-top:28px">遇到問題？</div><button class="link t14" data-act="doneDlg">手動完成柯打</button></div></div>`;
+};
+
+/* =================== overlays =================== */
+function closeOverlays(){ document.querySelectorAll('[data-ov]').forEach(n => n.remove()); }
+
+function openSheet(){
+  A.snackx();
+  const key = st.screen, p = PAGE[key];
+  const waitRow = '';
+  const app = $('#app .screen');
+  app.insertAdjacentHTML('beforeend', `<div class="dim" data-ov data-act="collapse"></div>
+  <div class="sheet" data-ov id="sheet">
+    <div class="fhead" data-act="collapse"><i class="handle"></i></div>
+    ${timerRow(key)}${payRow(p.total)}<div class="hr16"><i></i></div>
+    <div class="prow">${I.truck}<span class="m t17">車費</span><span class="v t17">$80</span></div>
+    <div class="prow">${I.en}<span class="m t17">英語司機</span><span class="v t17">$5</span></div>
+    <div class="prow">${I.paw}<span class="m t17">接送寵物</span><span class="v t17">$10</span></div>${waitRow}
+    <div class="prow tall">${I.gogox}<span class="m"><span class="t17" style="display:block">代GoGoX收取費用</span><span class="t14 sub">從錢包自動扣除</span></span><span class="v t17">$5</span></div>
+    <div class="btns"><button class="pbtn" data-act="${p.act}">${p.btn}</button></div><div class="home"></div></div>`);
+  // swipe down to close
+  const sh = $('#sheet'); let y0 = null, dy = 0;
+  sh.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; dy = 0; sh.style.transition = 'none'; }, {passive:true});
+  sh.addEventListener('touchmove', e => { if (y0 === null) return; dy = Math.max(0, (e.touches[0].clientY - y0) / scale); sh.style.transform = `translateY(${dy}px)`; }, {passive:true});
+  sh.addEventListener('touchend', () => { sh.style.transition = ''; if (dy > 80) collapse(); else sh.style.transform = ''; y0 = null; });
+}
+function collapse(){
+  const sh = $('#sheet'), dim = $('.dim');
+  if (!sh) return;
+  sh.classList.add('closing'); dim && dim.classList.add('closing');
+  setTimeout(closeOverlays, 200);
+}
+
+function openPopover(row, addr){
+  const scr = $('#app .screen');
+  const pr = scr.getBoundingClientRect(), rr = row.getBoundingClientRect();
+  const bottom = (rr.bottom - pr.top) / scale, top = (rr.top - pr.top) / scale;
+  const h = 248, H = scr.offsetHeight;
+  const below = bottom + 4 + h < H - 8;
+  const y = below ? bottom + 4 : top - h - 4;
+  scr.insertAdjacentHTML('beforeend', `<div class="popwrap" data-ov data-act="closepop">
+    <div class="pop ${below ? '' : 'up'}" style="top:${y}px" data-addr="${addr}">
+      <button data-act="map" data-app="Apple 地圖">以Apple地圖開放</button>
+      <button data-act="map" data-app="Google 地圖">以Google地圖開放</button>
+      <button data-act="map" data-app="高德地圖">以高德地圖開放</button>
+      <button data-act="copyaddr">複製地址</button></div></div>`);
+}
+
+let snackT;
+function snack(){
+  const scr = $('#app .screen'); const old = scr.querySelector('.snack'); old && old.remove();
+  const f = scr.querySelector('[data-footer]');
+  const b = f ? f.offsetHeight + 12 : 40;
+  scr.insertAdjacentHTML('beforeend', `<div class="snack" style="bottom:${b}px"><span>已複製</span><button data-act="snackx" aria-label="關閉">${I.x14}</button></div>`);
+  clearTimeout(snackT); snackT = setTimeout(() => { const s = scr.querySelector('.snack'); s && s.remove(); }, 2500);
+}
+
+function dialog(html){
+  $('#app .screen').insertAdjacentHTML('beforeend', `<div class="dimfix" data-ov></div><div class="dlg" data-ov>${html}</div>`);
+}
+function openDisableDrop(){
+  dialog(`<h3>請先更新狀態為「到達上貨點」，即可複製或從地圖查看落貨地址</h3><p>請確保你已到達上貨點後，才更新柯打狀態</p>
+    <div class="col"><button class="pbtn" data-act="closeOv">知道了</button><button class="sbtn" data-act="toTrip1">已到達上貨點</button></div>`);
+}
+function openDots(){
+  $('#app .screen').insertAdjacentHTML('beforeend', `<div class="popwrap" data-ov data-act="closepop">
+    <div class="pop dotpop" style="top:112px">
+      <button data-act="restart">放柯打</button><button data-act="closepop">致電司機柯打專線</button>
+      <button data-act="closepop">將客人列入黑名單</button><button data-act="restart" class="red">取消柯打</button></div></div>`);
+}
+function openWaitSheet(){
+  const base = st.screen === 'amend' ? st.draft : st.price;
+  const v = base.wait || (st.waitSec > 0 ? waitMin() : '');
+  $('#app .screen').insertAdjacentHTML('beforeend', `<div class="dim" data-ov data-act="closeOv"></div>
+  <div class="sheet wsheet" data-ov>
+    <div class="whead"><div class="wtitle"><span class="t20">超時等候時間</span><button class="xb" data-act="closeOv" aria-label="關閉">${I.xDark}</button></div>
+      <div class="t14 sub" style="margin-top:8px">$10 / 5 分鐘（不滿 5 分鐘按 5 分鐘計）</div></div>
+    <div class="wfield"><label class="t14 sub" for="waitIn">等候時間 (分鐘)</label><input id="waitIn" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="999" value="${v}"></div>
+    <div class="btns"><button class="pbtn" data-act="waitUpdate" id="waitBtn">更新($${waitFee(+v || 0)})</button></div><div class="home"></div></div>`);
+  const inp = $('#waitIn'), btn = $('#waitBtn');
+  inp.addEventListener('input', () => {
+    inp.value = inp.value.replace(/[^0-9]/g, '').slice(0, 3);
+    btn.textContent = `更新($${waitFee(parseInt(inp.value, 10) || 0)})`;
+  });
+}
+function openDone(){
+  const income = total(st.price) - 5;
+  dialog(`<svg width="220" height="140" viewBox="0 0 220 140" style="margin:-8px auto 12px">
+      <path d="M30 120c-22 0-26-30-4-36-6-26 26-38 40-22 8-28 52-34 66-8 16-16 48-6 46 20 24 2 26 40 2 46z" fill="#e6effa"/>
+      <path d="M64 58h86l22 22v38H64z" fill="#1f4ea3"/><path d="M64 58l22-16h58l6 16z" fill="#26468f"/>
+      <path d="M150 58h18l22 26v34h-40z" fill="#2a63c4"/><path d="M156 64h11l15 18h-26z" fill="#bfe1fb"/>
+      <path d="M110 70l26 30M136 70l-26 30" stroke="#ffdd00" stroke-width="10" stroke-linecap="round"/>
+      <rect x="68" y="66" width="30" height="20" rx="3" fill="#bfe1fb"/>
+      <circle cx="84" cy="120" r="11" fill="#12233f"/><circle cx="84" cy="120" r="5" fill="#9fb3cc"/>
+      <circle cx="166" cy="120" r="11" fill="#12233f"/><circle cx="166" cy="120" r="5" fill="#9fb3cc"/>
+      <circle cx="122" cy="26" r="17" fill="#ffd21f" stroke="#e8a900" stroke-width="3"/><text x="122" y="33" text-anchor="middle" font-size="20" font-weight="800" fill="#c48700" font-family="Arial,sans-serif">G</text>
+    </svg>
+    <h3>已完成柯打！</h3><p style="margin-bottom:24px">今天達成<br>1支柯打<br>收入$${income}</p>
+    <div class="col"><button class="pbtn" data-act="noop">為柯打評分</button><button class="sbtn" data-act="restart">繼續接柯打！</button></div>`);
+}
+
+/* =================== navigation =================== */
+let graceT, callT;
+function go(name){
+  clearTimeout(graceT); clearTimeout(callT);
+  const keep = st.screen === name && $('#scroller') ? $('#scroller').scrollTop : null;
+  st.screen = name;
+  $('#app').innerHTML = S[name]();
+  if (keep !== null && $('#scroller')) $('#scroller').scrollTop = keep;
+  if (name === 'picking'){
+    const f = $('#graceFill');
+    requestAnimationFrame(() => requestAnimationFrame(() => f.classList.add('run')));
+    graceT = setTimeout(() => { if (st.screen === 'picking') go('arrivePickup'); }, 9000);
+  }
+  if (name === 'chat'){ const b = $('#chatbody'); b.style.bottom = document.querySelector('.chatfoot').offsetHeight + 'px'; b.scrollTop = b.scrollHeight; }
+  if (name === 'call'){ st.callStart = null; callT = setTimeout(() => { st.callStart = Date.now(); }, 2200); }
+  tick();
+}
+function sub(name){ st.ret = st.screen; go(name); }
+function back(){ go(st.ret || 'start'); }
+
+function tick(){
+  document.querySelectorAll('[data-bind=cd]').forEach(n => n.textContent = mmss(Math.ceil(cdLeft())));
+  document.querySelectorAll('[data-bind=cu]').forEach(n => n.textContent = mmss(cuSec()));
+  const cl = document.querySelector('[data-bind=call]'); if (cl && st.callStart) cl.textContent = mmss((Date.now()-st.callStart)/1000);
+}
+setInterval(tick, 250);
+
+/* =================== actions =================== */
+let secretTaps = [];
+const A = {
+  toPicking: () => go('picking'),
+  toStart: () => go('start'),
+  toArrive: () => go('arrivePickup'),
+  toTrip1: () => { st.cdStart = Date.now(); go('trip1'); },
+  skipWait: () => { st.cuStart = Date.now(); go('trip2'); },
+  toDropoff: () => { st.waitSec = st.screen === 'trip2' ? cuSec() : 0; go('dropoff'); },
+  noop: () => {},
+  close: () => { if (st.screen === 'picking') go('start'); else if (st.screen === 'summary') A.restart(); },
+  copy: () => snack(),
+  copyaddr: () => { closeOverlays(); snack(); },
+  snackx: () => { const s = document.querySelector('.snack'); s && s.remove(); },
+  call: () => sub('call'),
+  hangup: () => back(),
+  chat: () => { st.chatKey = PAGE[st.screen].chat; sub('chat'); },
+  back: () => back(),
+  chip: el => { st.chats[st.chatKey].draft = el.dataset.t; go('chat'); },
+  send: () => { const c = st.chats[st.chatKey]; if (!c.draft) return; c.msgs.push({t:c.draft, time:nowHM()}); c.draft = ''; go('chat'); },
+  expand: () => openSheet(),
+  collapse: () => collapse(),
+  addr: el => openPopover(el, el.dataset.addr),
+  closepop: () => closeOverlays(),
+  map: el => { const addr = el.closest('.pop').dataset.addr; closeOverlays(); st.map = {addr, app:el.dataset.app}; sub('map'); },
+  disableDrop: () => openDisableDrop(),
+  dots: () => openDots(),
+  closeOv: () => closeOverlays(),
+  toViewPrice: () => go('viewPrice'),
+  vpClose: () => go('summary'),
+  toAmend: () => { st.draft = {...st.price}; go('amend'); },
+  amendClose: () => { st.draft = null; go('viewPrice'); },
+  commitAmend: () => { st.price = {...st.draft}; st.draft = null; go('viewPrice'); },
+  xItem: el => { const k = el.dataset.k; st.draft[k] = k === 'wait' ? 0 : false; go('amend'); },
+  readd: el => { st.draft[el.dataset.k] = true; go('amend'); },
+  waitSheet: () => openWaitSheet(),
+  waitUpdate: () => {
+    const m = parseInt($('#waitIn').value, 10) || 0;
+    if (st.screen !== 'amend') st.draft = {...st.price};
+    st.draft.wait = m; go('amend');
+  },
+  toFps: () => go('fps'),
+  fpsClose: () => go('summary'),
+  doneDlg: () => openDone(),
+  restart: () => { reset(); go('start'); },
+  secret: () => { const t = Date.now(); secretTaps = secretTaps.filter(x => t - x < 700); secretTaps.push(t); if (secretTaps.length >= 3){ secretTaps = []; reset(); go('start'); } },
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  // taps inside the popover box itself (not on a button) should not close it
+  if (el.dataset.act === 'closepop' && e.target.closest('.pop') && !e.target.closest('button')) return;
+  e.stopPropagation();
+  const fn = A[el.dataset.act]; fn && fn(el);
+});
+
+/* =================== fit to device =================== */
+let scale = 1;
+function fit(){
+  const stage = $('#stage'), phone = $('#phone');
+  const W = stage.clientWidth, H = stage.clientHeight;
+  const mobile = W < 520;
+  stage.classList.toggle('framed', !mobile);
+  let h;
+  if (mobile){
+    scale = W / 393; h = H / scale;
+    if (h < 700){ h = 700; scale = H / 700; }
+    if (h > 1000) h = 1000;
+  } else {
+    h = 852; scale = Math.min(1, (H - 70) / 852, (W - 40) / 393);
+  }
+  phone.style.height = h + 'px';
+  phone.style.transform = `scale(${scale})`;
+  const left = (W - 393 * scale) / 2, top = mobile ? (H - h * scale) / 2 : Math.max(16, (H - 36 - h * scale) / 2);
+  phone.style.left = left + 'px'; phone.style.top = top + 'px';
+}
+const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if (isIOS && (navigator.standalone || matchMedia('(display-mode: standalone)').matches)) document.documentElement.classList.add('ios-sa');
+// Android: first tap switches the browser to full screen
+if (!isIOS && matchMedia('(pointer:coarse)').matches && document.documentElement.requestFullscreen) {
+  document.addEventListener('pointerup', () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen({navigationUI:'hide'}).catch(() => {});
+  }, true);
+}
+window.addEventListener('resize', fit);
+document.addEventListener('fullscreenchange', () => setTimeout(fit, 120));
+fit();
+go('start');
+})();
+</script>
+</body>
+</html>
