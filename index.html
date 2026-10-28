@@ -804,6 +804,12 @@ document.addEventListener('click', e => {
 let scale = 1;
 function fit(){
   const stage = $('#stage'), phone = $('#phone');
+  if (document.documentElement.classList.contains('ios-sa')) {
+    // iPhone home-screen mode under-reports 100% height by the status bar; use the real screen height
+    const portrait = window.innerHeight >= window.innerWidth;
+    const vh = Math.max(window.innerHeight, portrait ? (window.screen.height || 0) : 0) + 'px';
+    document.documentElement.style.height = vh; document.body.style.height = vh; stage.style.height = vh;
+  }
   const W = stage.clientWidth, H = stage.clientHeight;
   const mobile = W < 520;
   stage.classList.toggle('framed', !mobile);
