@@ -345,7 +345,7 @@ const nowHM = () => { const d=new Date(); return String(d.getHours()).padStart(2
 const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cdLeft = () => st.cdStart ? 900 - (Date.now()-st.cdStart)/1000 : 900;
 const cuSec = () => st.cuStart ? (Date.now()-st.cuStart)/1000 : 0;
-const waitMin = () => Math.max(1, Math.ceil(st.waitSec/60));
+const waitMin = () => Math.max(1, Math.floor(st.waitSec/60));
 
 const statusBar = (color='#fff') => `<div class="sb" style="color:${color}"><span class="sb-time" data-act="secret">9:41</span><span class="sb-icons">${I.status(color)}</span></div>`;
 
