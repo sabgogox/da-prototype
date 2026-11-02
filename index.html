@@ -264,6 +264,7 @@ svg{display:block}
 /* =================== icons =================== */
 const I = {
   close:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M5.5 5.5l13 13M18.5 5.5l-13 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  back:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M15 4.5L7.5 12l7.5 7.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   copy:c=>`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${c||'currentColor'}" stroke-width="1.8"><rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2.5"/><path d="M15.5 8.5V6A2 2 0 0 0 13.5 4H6A2 2 0 0 0 4 6v7.5a2 2 0 0 0 2 2h2.5"/></svg>`,
   dots:'<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5.5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="18.5" r="1.7"/></svg>',
   bolt:'<svg width="24" height="24" viewBox="0 0 24 24"><path d="M14 2.5L5.5 13.6h5.8L9.8 21.5l8.7-11.6h-6L14 2.5z" fill="#fff"/></svg>',
@@ -327,7 +328,7 @@ const freshChats = () => ({
 let st;
 function reset(){
   st = {screen:'start', ret:null, cdStart:null, cuStart:null, waitSec:0, chats:freshChats(), map:null, chatKey:null, callStart:null,
-    price:{en:true, pet:true, wait:0}, draft:null};
+    price:{en:true, pet:true, wait:0}, draft:null, hist:[]};
 }
 reset();
 
@@ -350,7 +351,7 @@ const waitMin = () => Math.max(1, Math.floor(st.waitSec/60));
 const statusBar = (color='#fff') => `<div class="sb" style="color:${color}"><span class="sb-time" data-act="secret">9:41</span><span class="sb-icons">${I.status(color)}</span></div>`;
 
 const orderTop = (right) => `<div class="top">${statusBar()}<div class="nav">
-  <button class="ic-l" data-act="close" aria-label="關閉">${I.close}</button>
+  <button class="ic-l" data-act="navBack" aria-label="返回">${I.back}</button>
   <div class="nav-title">#123456<button data-act="copy" aria-label="複製柯打編號" style="display:flex">${I.copy('#fff')}</button></div>
   <div class="ic-r">${right || `<button data-act="dots" aria-label="更多">${I.dots}</button>`}</div></div></div>`;
 
@@ -462,7 +463,7 @@ S.chat = () => {
   const keys = r => r.split('').map(k => `<span class="k">${k}</span>`).join('');
   return `<div class="screen" style="background:#fff">
   <div class="top chathead">${statusBar()}<div class="nav">
-    <button class="ic-l" data-act="back" aria-label="返回">${I.close}</button>
+    <button class="ic-l" data-act="navBack" aria-label="返回">${I.back}</button>
     <span class="ttl">Client name</span><span class="st">Kwun Tong &gt; Aberdeen</span></div></div>
   <div class="chatbody" id="chatbody" style="bottom:${c.draft.length > 20 ? 435 : 411}px">
     <div class="cnote">Auto-translation is enabled (Beta)<br>Click “View Original” if auto-translation is inaccurate</div>
@@ -555,9 +556,9 @@ S.viewPrice = () => {
   const pr = st.price, t = total(pr);
   const waitLabel = pr.wait ? `超時等候時間 (${pr.wait}分鐘)` : `超時等候時間${timerMinLabel()}`;
   return `<div class="screen">
-  <div class="top">${statusBar()}<div class="nav"><button class="ic-l" data-act="vpClose" aria-label="關閉">${I.close}</button>
+  <div class="top">${statusBar()}<div class="nav"><button class="ic-l" data-act="navBack" aria-label="返回">${I.back}</button>
     <span class="t17 b">柯打價錢</span><div class="ic-r"><span>${I.support}</span></div></div>
-    <div class="vphead"><div class="l1">撳“收取款項”掃碼收款</div><div class="vpamt">$${t}</div></div></div>
+    <div class="vphead"><div class="l1">撳「收取款項」掃碼收款</div><div class="vpamt">$${t}</div></div></div>
   <div class="vplist">
     <div class="sec">柯打價錢</div>
     <div class="prow">${I.wallet()}<span class="m t17">轉數快 (二維碼)</span><span class="t17 b">$${t}</span></div>
@@ -572,6 +573,7 @@ S.viewPrice = () => {
 };
 
 S.amend = () => {
+  if (!st.draft) st.draft = {...st.price};
   const d = st.draft;
   const row = (icon, label, right, attrs = '') => `<div class="prow arow ${attrs ? 'tap' : ''}" ${attrs}>${icon}<span class="m t17">${label}</span>${right}</div>`;
   const chev = I.chevR;
@@ -580,7 +582,7 @@ S.amend = () => {
     ? row(I.wait, `超時等候時間 (${d.wait}分鐘)`, x(waitFee(d.wait), 'wait'))
     : row(I.wait, `超時等候時間${timerMinLabel()}`, `<button class="link t17" data-act="waitSheet">收取等待費</button>`);
   return `<div class="screen">
-  <div class="top">${statusBar()}<div class="nav"><button class="ic-l" data-act="amendClose" aria-label="關閉">${I.close}</button><span class="t17 b">修正價錢</span></div></div>
+  <div class="top">${statusBar()}<div class="nav"><button class="ic-l" data-act="navBack" aria-label="返回">${I.back}</button><span class="t17 b">修正價錢</span></div></div>
   <div class="ascroll" id="scroller">
     <div class="asec"><h4>路程收費</h4>
       ${row(I.tunnel, '隧道費及橋費', chev)}${row(I.parking, '停車場收費', chev)}${row(I.routeI, '路線', chev)}${waitRow}</div>
@@ -610,7 +612,7 @@ function qrSvg(){
 S.fps = () => {
   const t = total(st.price);
   return `<div class="screen" style="background:#fff">
-  <div class="top">${statusBar()}<div class="nav"><button class="ic-l" data-act="fpsClose" aria-label="關閉">${I.close}</button>
+  <div class="top">${statusBar()}<div class="nav"><button class="ic-l" data-act="navBack" aria-label="返回">${I.back}</button>
     <span class="t17 b">收取款項</span><div class="ic-r"><span>${I.support}</span></div></div>
     <div class="fpsinfo"><div class="t14" style="opacity:.85">柯打編號 #123456</div>
       <div class="fr">觀塘${I.arrowW}尖沙咀</div>
@@ -719,8 +721,9 @@ function openDone(){
 
 /* =================== navigation =================== */
 let graceT, callT;
-function go(name){
+function go(name, push = true){
   clearTimeout(graceT); clearTimeout(callT);
+  if (push && st.screen && st.screen !== name) st.hist.push(st.screen);
   const keep = st.screen === name && $('#scroller') ? $('#scroller').scrollTop : null;
   st.screen = name;
   $('#app').innerHTML = S[name]();
@@ -734,8 +737,14 @@ function go(name){
   if (name === 'call'){ st.callStart = null; callT = setTimeout(() => { st.callStart = Date.now(); }, 2200); }
   tick();
 }
-function sub(name){ st.ret = st.screen; go(name); }
-function back(){ go(st.ret || 'start'); }
+function sub(name){ go(name); }
+// one step back through the pages visited (nav-bar “<”, map “返回”, call hang-up)
+function back(){
+  const prev = st.hist.pop();
+  if (!prev) return;
+  if (st.screen === 'amend') st.draft = null;
+  go(prev, false);
+}
 
 function tick(){
   document.querySelectorAll('[data-bind=cd]').forEach(n => n.textContent = mmss(Math.ceil(cdLeft())));
@@ -760,6 +769,7 @@ const A = {
   snackx: () => { const s = document.querySelector('.snack'); s && s.remove(); },
   call: () => sub('call'),
   hangup: () => back(),
+  navBack: () => back(),
   chat: () => { st.chatKey = PAGE[st.screen].chat; sub('chat'); },
   back: () => back(),
   chip: el => { st.chats[st.chatKey].draft = el.dataset.t; go('chat'); },
